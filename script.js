@@ -4,8 +4,7 @@ const BASE_URL = "https://restcountries.com/v3.1/";
 // endpoint: the address of a specific resource we want to access
 const allCountriesEndpoint = "all";
 
-//getAllCountries().then((result) => console.log(result));
-listAllCountryNames();
+populatePage();
 
 // to access data on this RESTful service we will use the Fetch API
 // async functions can use the "await" keyword
@@ -16,7 +15,7 @@ async function getAllCountries() {
         // fetch("https://restcountries.com/v3.1/all")
         // fetch creates an HTTP GET request to the argument URL
         const request = fetch(`${BASE_URL}${allCountriesEndpoint}`);
-    
+
         // wait for the fetch to resolve, and store the resolve argument in "response"
         const response = await(request);
 
@@ -35,12 +34,38 @@ async function getAllCountries() {
     }
 }
 
-async function listAllCountryNames() {
+// Async functions always return a promise
+// That promise is automatically resolved with the returned value as the resolution value
+async function listAllCountryData() {
     // querying all countries
     const allCountriesJSON = await getAllCountries();
-
     // because our response is an array, we can iterate over it
-    allCountriesJSON.forEach(country => {
-        console.log(country["name"]["common"]);
+
+    // create a new array of objects that contain only the data that we need
+    const allCountryData = allCountriesJSON.map((country) => {
+        // destructuring of the object for Common Name, Population, and Region
+        const {
+            name: {common},
+            population, 
+            region
+        } = country;
+
+        return {"name": common, "population": population, "region": region};
+    });
+
+    return allCountryData;
+}
+
+async function populatePage() {
+    const allCountryNames = await listAllCountryData();
+    const mainNode = document.querySelector("main");
+
+    allCountryNames.forEach((cData) => {
+        const newNamePara = document.createElement("p");
+
+        const {name, region, population} = cData;
+
+        newNamePara.textContent = `${name}, ${region}. Population: ${population}`;
+        mainNode.appendChild(newNamePara);
     });
 }
